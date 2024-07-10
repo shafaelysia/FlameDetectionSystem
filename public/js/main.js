@@ -190,6 +190,11 @@ function loadSensorData() {
   });
 }
 
+// Update latest data function
+function updateLatestValue(id, value) {
+  document.getElementById(id).innerText = value || "N/A";
+}
+
 // Process and display sensor data
 function processSensorData(sensorDataList) {
   // Initialize empty arrays for chart data
@@ -248,11 +253,6 @@ function updateChart(chart, values, timestamps) {
     }
   });
   chart.update();
-}
-
-// Update latest data
-function updateLatestValue(id, value) {
-  document.getElementById(id).innerText = value || "N/A";
 }
 
 // Update Flame Log Table
