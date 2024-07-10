@@ -176,38 +176,38 @@ function showMainPage(user) {
   loadSensorData();
 }
 
-// Initialize empty arrays for chart data
-let temperatureList = [];
-let humidityList = [];
-let flameValueList = [];
-let flameDetectedList = [];
-let timestampList = [];
-
 // Load sensor data from database
 function loadSensorData() {
   const sensorsRef = ref(database, "sensors");
-  let sensorDataList = [];
 
   onValue(sensorsRef, (snapshot) => {
+    let sensorDataList = [];
     snapshot.forEach((childSnapshot) => {
       const sensorData = childSnapshot.val();
       sensorDataList.push(sensorData);
     });
-
     processSensorData(sensorDataList);
   });
 }
 
 // Process and display sensor data
 function processSensorData(sensorDataList) {
+  // Initialize empty arrays for chart data
+  let temperatureList = [];
+  let humidityList = [];
+  let flameValueList = [];
+  let flameDetectedList = [];
+  let timestampList = [];
+
   sensorDataList.forEach((sensorData) => {
+    const localTime = new Date(sensorData.timestamp).toString();
     // Check if the timestamp already exists in the list
-    if (!timestampList.includes(sensorData.timestamp)) {
+    if (!timestampList.includes(localTime)) {
       temperatureList.push(sensorData.temperature);
       humidityList.push(sensorData.humidity);
       flameValueList.push(sensorData.flameValue);
       flameDetectedList.push(sensorData.flameDetected);
-      timestampList.push(sensorData.timestamp);
+      timestampList.push(localTime);
 
       // Update latest values
       updateLatestValue('temperature', sensorData.temperature);
@@ -216,7 +216,7 @@ function processSensorData(sensorDataList) {
 
       // Update flame log table
       if (sensorData.flameDetected) {
-        addFlameLogEntry(sensorData.timestamp);
+        addFlameLogEntry(localTime);
       }
     }
   });
@@ -224,34 +224,38 @@ function processSensorData(sensorDataList) {
   if (flameDetectedList[flameDetectedList.length - 1] === true) {
     showFlameDetectedToast();
   }
-  // After data processing, update charts
+
   updateChart(temperatureChart, temperatureList, timestampList);
   updateChart(humidityChart, humidityList, timestampList);
   updateChart(flameChart, flameValueList, timestampList);
 }
 
+// Update Chart
 function updateChart(chart, values, timestamps) {
-  // Clear previous data
-  chart.data.labels.pop();
-  chart.data.datasets.forEach(dataset => {
-    dataset.data.pop()
-  });
-
+  // Clear previous data;
+  chart.data.labels = []
+  chart.data.datasets.data = []
   chart.update();
 
   // Add new data
   timestamps.forEach((timestamp, index) => {
-    const time = new Date(timestamp);
-    chart.data.labels.push(time);
-    chart.data.datasets[0].data[index] = values[index];
+    const date = new Date(timestamp);
+    if (!isNaN(date)) { // Ensure the date is valid
+      chart.data.labels.push(date);
+      chart.data.datasets[0].data.push(values[index]);
+    } else {
+      console.error(`Invalid date: ${timestamp}`);
+    }
   });
   chart.update();
 }
 
+// Update latest data
 function updateLatestValue(id, value) {
   document.getElementById(id).innerText = value || "N/A";
 }
 
+// Update Flame Log Table
 function addFlameLogEntry(timestamp) {
   const tableBody = document.querySelector("#flameLogTable tbody");
   const row = document.createElement("tr");
@@ -261,6 +265,7 @@ function addFlameLogEntry(timestamp) {
   tableBody.appendChild(row);
 }
 
+// Show Toast when Flame is Detected
 function showFlameDetectedToast() {
   var toastElList = [].slice.call(document.querySelectorAll('.toast'));
   var toastList = toastElList.map(function (toastEl) {
