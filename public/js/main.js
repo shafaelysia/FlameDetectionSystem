@@ -11,6 +11,92 @@ import {
   signOut,
 } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
+// Chart.js instances
+const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
+const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
+const flameChartCtx = document.getElementById('flameChart').getContext('2d');
+
+const temperatureChart = new Chart(temperatureChartCtx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Temperature (°C)',
+      data: [],
+      borderColor: 'rgba(255, 99, 132, 1)',
+      borderWidth: 1,
+      fill: false
+    }]
+  },
+  options: {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'hour'
+        }
+      },
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
+});
+
+const humidityChart = new Chart(humidityChartCtx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Humidity (%)',
+      data: [],
+      borderColor: 'rgba(54, 162, 235, 1)',
+      borderWidth: 1,
+      fill: false
+    }]
+  },
+  options: {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'hour'
+        }
+      },
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
+});
+
+const flameChart = new Chart(flameChartCtx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Flame Value',
+      data: [],
+      borderColor: 'rgba(255, 206, 86, 1)',
+      borderWidth: 1,
+      fill: false
+    }]
+  },
+  options: {
+    scales: {
+      x: {
+        type: 'time',
+        time: {
+          unit: 'hour'
+        }
+      },
+      y: {
+        beginAtZero: true
+      }
+    }
+  }
+});
+
 // Web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCme5GyqT2cHQImHwrp_4IN6xlOztlBTM8",
@@ -90,37 +176,95 @@ function showMainPage(user) {
   loadSensorData();
 }
 
+// Initialize empty arrays for chart data
+let temperatureList = [];
+let humidityList = [];
+let flameValueList = [];
+let flameDetectedList = [];
+let timestampList = [];
+
 // Load sensor data from database
 function loadSensorData() {
-  const tempRef = ref(database, "sensors/temperature");
-  const humRef = ref(database, "sensors/humidity");
-  const flameValueRef = ref(database, "sensors/flameValue");
-  const flameDetectedRef = ref(database, "sensors/flameDetected");
+  const sensorsRef = ref(database, "sensors");
+  let sensorDataList = [];
 
-  onValue(tempRef, (snapshot) => {
-    const temperature = snapshot.val();
-    document.getElementById("temperature").innerText = temperature || "N/A";
+  onValue(sensorsRef, (snapshot) => {
+    snapshot.forEach((childSnapshot) => {
+      const sensorData = childSnapshot.val();
+      sensorDataList.push(sensorData);
+    });
+
+    processSensorData(sensorDataList);
   });
+}
 
-  onValue(humRef, (snapshot) => {
-    const humidity = snapshot.val();
-    document.getElementById("humidity").innerText = humidity || "N/A";
-  });
+// Process and display sensor data
+function processSensorData(sensorDataList) {
+  sensorDataList.forEach((sensorData) => {
+    // Check if the timestamp already exists in the list
+    if (!timestampList.includes(sensorData.timestamp)) {
+      temperatureList.push(sensorData.temperature);
+      humidityList.push(sensorData.humidity);
+      flameValueList.push(sensorData.flameValue);
+      flameDetectedList.push(sensorData.flameDetected);
+      timestampList.push(sensorData.timestamp);
 
-  onValue(flameValueRef, (snapshot) => {
-    const flameValue = snapshot.val();
-    document.getElementById("flameValue").innerText = flameValue || "N/A";
-  });
+      // Update latest values
+      updateLatestValue('temperature', sensorData.temperature);
+      updateLatestValue('humidity', sensorData.humidity);
+      updateLatestValue('flameValue', sensorData.flameValue);
 
-  onValue(flameDetectedRef, (snapshot) => {
-    // Modal popover when flame is detected
-    const flameDetected = snapshot.val();
-    if (flameDetected) {
-      var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-      var toastList = toastElList.map(function(toastEl) {
-        return bootstrap.Toast.getOrCreateInstance(toastEl)
-      })
-      toastList.forEach(toast => toast.show())
+      // Update flame log table
+      if (sensorData.flameDetected) {
+        addFlameLogEntry(sensorData.timestamp);
+      }
     }
   });
+
+  if (flameDetectedList[flameDetectedList.length - 1] === true) {
+    showFlameDetectedToast();
+  }
+  // After data processing, update charts
+  updateChart(temperatureChart, temperatureList, timestampList);
+  updateChart(humidityChart, humidityList, timestampList);
+  updateChart(flameChart, flameValueList, timestampList);
+}
+
+function updateChart(chart, values, timestamps) {
+  // Clear previous data
+  chart.data.labels.pop();
+  chart.data.datasets.forEach(dataset => {
+    dataset.data.pop()
+  });
+
+  chart.update();
+
+  // Add new data
+  timestamps.forEach((timestamp, index) => {
+    const time = new Date(timestamp);
+    chart.data.labels.push(time);
+    chart.data.datasets[0].data[index] = values[index];
+  });
+  chart.update();
+}
+
+function updateLatestValue(id, value) {
+  document.getElementById(id).innerText = value || "N/A";
+}
+
+function addFlameLogEntry(timestamp) {
+  const tableBody = document.querySelector("#flameLogTable tbody");
+  const row = document.createElement("tr");
+  const cell = document.createElement("td");
+  cell.textContent = new Date(timestamp).toLocaleString();
+  row.appendChild(cell);
+  tableBody.appendChild(row);
+}
+
+function showFlameDetectedToast() {
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  var toastList = toastElList.map(function (toastEl) {
+    return new bootstrap.Toast(toastEl);
+  });
+  toastList.forEach(toast => toast.show());
 }

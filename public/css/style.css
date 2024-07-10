@@ -11,6 +11,7 @@ body {
 	display: flex;
 	display: -webkit-flex;
 	justify-content: center;
+	overflow-x: hidden;
 	-o-justify-content: center;
 	-ms-justify-content: center;
 	-moz-justify-content: center;
