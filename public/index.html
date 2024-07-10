@@ -97,14 +97,14 @@
   <div id="main-page" style="display: none">
     <div class="page-content h-100">
       <div class="row w-100" style="background-color: #FFDDA1;">
-        <div class="col-3 container">
+        <div class="col-2 container">
           <center>
-            <img src="assets/Logo.png" alt="Flame Guard" class="img-fluid" width="70%">
+            <img src="assets/Logo.png" alt="Flame Guard" class="img-fluid mt-5" width="70%">
           </center>
-          <h5>Welcome, <span id="user-email"></span></h5>
-          <button id="logout" class="btn-lg btn-warning">Logout</button>
+          <h7>Welcome, <b><span id="user-email"></span></b></h7>
+          <button id="logout" class="btn btn-warning w-100 my-3">Logout</button>
         </div>
-        <div class="col-9 bg-white justify-content-center">
+        <div class="col-10 bg-white justify-content-center">
           <div class="container w-75 mt-5 mb-5">
             <h1>Fire Detection System</h1>
             <div class="row justify-content-around m-auto my-5">
@@ -138,6 +138,7 @@
                 <div class="card p-2">
                   <div class="card-body">
                     <h5 class="card-title pb-1">Temperature Chart</h5>
+                    <hr>
                     <canvas id="temperatureChart"></canvas>
                   </div>
                 </div>
@@ -145,6 +146,7 @@
                 <div class="card p-2">
                   <div class="card-body">
                     <h5 class="card-title pb-1"">Humidity Chart</h5>
+                    <hr>
                     <canvas id="humidityChart"></canvas>
                   </div>
                 </div>
@@ -152,6 +154,7 @@
                 <div class="card p-2">
                   <div class="card-body">
                     <h5 class="card-title pb-1"">Flame Value Chart</h5>
+                    <hr>
                     <canvas id="flameChart"></canvas>
                   </div>
                 </div>
@@ -160,11 +163,12 @@
               <div class="col-md-4">
                 <div class="card p-2">
                   <div class="card-body">
-                    <h6 class="card-title pb-1">Flame Detection Logs</h6>
+                    <h5 class="card-title pb-1">Flame Detection Logs</h5>
+                    <hr>
                     <table class="table table-striped" id="flameLogTable">
                       <thead>
                         <tr>
-                          <th scope="col">Timestamp</th>
+                          <th scope="col">Time Detected</th>
                         </tr>
                       </thead>
                       <tbody></tbody>
