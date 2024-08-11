@@ -12,89 +12,99 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
 // Chart.js instances
-const temperatureChartCtx = document.getElementById('temperatureChart').getContext('2d');
-const humidityChartCtx = document.getElementById('humidityChart').getContext('2d');
-const flameChartCtx = document.getElementById('flameChart').getContext('2d');
+const temperatureChartCtx = document
+  .getElementById("temperatureChart")
+  .getContext("2d");
+const humidityChartCtx = document
+  .getElementById("humidityChart")
+  .getContext("2d");
+const flameChartCtx = document.getElementById("flameChart").getContext("2d");
 
 const temperatureChart = new Chart(temperatureChartCtx, {
-  type: 'line',
+  type: "line",
   data: {
     labels: [],
-    datasets: [{
-      label: 'Temperature (°C)',
-      data: [],
-      borderColor: 'rgba(255, 99, 132, 1)',
-      borderWidth: 1,
-      fill: false
-    }]
+    datasets: [
+      {
+        label: "Temperature (°C)",
+        data: [],
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+        fill: false,
+      },
+    ],
   },
   options: {
     scales: {
       x: {
-        type: 'time',
+        type: "time",
         time: {
-          unit: 'hour'
-        }
+          unit: "hour",
+        },
       },
       y: {
-        beginAtZero: true
-      }
-    }
-  }
+        beginAtZero: true,
+      },
+    },
+  },
 });
 
 const humidityChart = new Chart(humidityChartCtx, {
-  type: 'line',
+  type: "line",
   data: {
     labels: [],
-    datasets: [{
-      label: 'Humidity (%)',
-      data: [],
-      borderColor: 'rgba(54, 162, 235, 1)',
-      borderWidth: 1,
-      fill: false
-    }]
+    datasets: [
+      {
+        label: "Humidity (%)",
+        data: [],
+        borderColor: "rgba(54, 162, 235, 1)",
+        borderWidth: 1,
+        fill: false,
+      },
+    ],
   },
   options: {
     scales: {
       x: {
-        type: 'time',
+        type: "time",
         time: {
-          unit: 'hour'
-        }
+          unit: "hour",
+        },
       },
       y: {
-        beginAtZero: true
-      }
-    }
-  }
+        beginAtZero: true,
+      },
+    },
+  },
 });
 
 const flameChart = new Chart(flameChartCtx, {
-  type: 'line',
+  type: "line",
   data: {
     labels: [],
-    datasets: [{
-      label: 'Flame Value',
-      data: [],
-      borderColor: 'rgba(255, 206, 86, 1)',
-      borderWidth: 1,
-      fill: false
-    }]
+    datasets: [
+      {
+        label: "Flame Value",
+        data: [],
+        borderColor: "rgba(255, 206, 86, 1)",
+        borderWidth: 1,
+        fill: false,
+      },
+    ],
   },
   options: {
     scales: {
       x: {
-        type: 'time',
+        type: "time",
         time: {
-          unit: 'hour'
-        }
+          unit: "hour",
+        },
       },
       y: {
-        beginAtZero: true
-      }
-    }
-  }
+        beginAtZero: true,
+      },
+    },
+  },
 });
 
 // Web app's Firebase configuration
@@ -215,9 +225,9 @@ function processSensorData(sensorDataList) {
       timestampList.push(localTime);
 
       // Update latest values
-      updateLatestValue('temperature', sensorData.temperature);
-      updateLatestValue('humidity', sensorData.humidity);
-      updateLatestValue('flameValue', sensorData.flameValue);
+      updateLatestValue("temperature", sensorData.temperature);
+      updateLatestValue("humidity", sensorData.humidity);
+      updateLatestValue("flameValue", sensorData.flameValue);
 
       // Update flame log table
       if (sensorData.flameDetected) {
@@ -238,14 +248,20 @@ function processSensorData(sensorDataList) {
 // Update Chart
 function updateChart(chart, values, timestamps) {
   // Clear previous data;
-  chart.data.labels = []
-  chart.data.datasets.data = []
+  if (chart.data.labels != []) {
+    chart.data.labels = [];
+  }
+  if (chart.data.datasets.data != []) {
+    chart.data.datasets.data = [];
+  }
   chart.update();
 
   // Add new data
   timestamps.forEach((timestamp, index) => {
     const date = new Date(timestamp);
-    if (!isNaN(date)) { // Ensure the date is valid
+    // console.log("time: " + date)
+    if (!isNaN(date)) {
+      // Ensure the date is valid
       chart.data.labels.push(date);
       chart.data.datasets[0].data.push(values[index]);
     } else {
@@ -267,9 +283,9 @@ function addFlameLogEntry(timestamp) {
 
 // Show Toast when Flame is Detected
 function showFlameDetectedToast() {
-  var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  var toastElList = [].slice.call(document.querySelectorAll(".toast"));
   var toastList = toastElList.map(function (toastEl) {
     return new bootstrap.Toast(toastEl);
   });
-  toastList.forEach(toast => toast.show());
+  toastList.forEach((toast) => toast.show());
 }
